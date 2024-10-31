@@ -3,8 +3,10 @@ import cv2
 import numpy as np
 from typing import Protocol
 
+
 class Object(Protocol):
     max_size = 50
+
     def mutate(self):
         pass
 
@@ -19,7 +21,10 @@ class Ellipse(Object):
 
         self.x = random.randint(0, target_image.shape[1] - 1)
         self.y = random.randint(0, target_image.shape[0] - 1)
-        self.size: tuple[int, int] = (random.randint(1, Ellipse.max_size), random.randint(1, Ellipse.max_size))
+        self.size: tuple[int, int] = (
+            random.randint(1, Ellipse.max_size),
+            random.randint(1, Ellipse.max_size),
+        )
         self.color = self.target_image[self.y, self.x].tolist()
         self.rotation = random.randint(0, 360)
         self.opacity = random.uniform(0.01, 1.0)
@@ -35,9 +40,7 @@ class Ellipse(Object):
             min(Ellipse.max_size, max(1, s + random.randint(-5, 5))) for s in self.size
         )
         self.rotation = (self.rotation + random.randint(-360, 360)) % 360
-        self.opacity = min(
-            1.0, max(0.5, self.opacity + random.uniform(-0.05, 0.05))
-        )
+        self.opacity = min(1.0, max(0.5, self.opacity + random.uniform(-0.05, 0.05)))
         self.color = self.target_image[self.y, self.x].tolist()
 
     def render(self, canvas):
@@ -65,10 +68,9 @@ class Gene:
         self.mutation_rate = mutation_rate
 
         self.object = Ellipse(target_image, mutation_rate)
-    
+
     def mutate(self):
         self.object.mutate()
-    
+
     def render(self, canvas):
         self.object.render(canvas)
-    
