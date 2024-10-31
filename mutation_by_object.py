@@ -1,10 +1,14 @@
+import colour.plotting
 import numpy as np
 import cv2
+import colour
+import matplotlib.pyplot as plt
+import threading
+
 from Gene import Gene
-from matplotlib import pyplot as plt
 
 # Load target image
-target_image_path = "cbpunk.jpg"
+target_image_path = "target_image.jpg"
 target_image = cv2.imread(target_image_path)
 org_height, org_width, _ = target_image.shape
 
@@ -13,6 +17,8 @@ aspect_ratio = org_width / org_height
 width = min(org_width, MAX_WIDTH)
 weight = int(width / aspect_ratio)
 
+print(f"Resizing image to {width}x{weight}")
+
 target_image = cv2.resize(target_image, (width, weight))
 
 cv2.imshow("Target Image", target_image)
@@ -20,103 +26,77 @@ cv2.waitKey(0)
 
 print("Starting...")
 
+
+def fitness(gene: Gene, canvas: np.ndarray) -> float:
+    gene.render(canvas)
+    return np.mean(colour.difference.delta_e.delta_E_CIE1976(canvas, target_image))
+
+
+population_size = 100
+parents_count = 100
+generations = 1000
+mutation_rate = 0.01
+
+print("Creating initial population...")
+initial_populations = [
+    Gene(target_image, mutation_rate) for _ in range(population_size)
+]
+
 average_color = cv2.mean(target_image)[:3]
 canvas = np.full_like(target_image, average_color, dtype=np.uint8)
 
+for generation in range(generations):
+    print(f"Generation {generation}")
 
-# Start with an empty list of GDObjects
-objects = []
-best_fitness = float("inf")  # Start with a very high fitness
+    # Calculate fitness
+    threads = []
+    for i in range(0, len(initial_populations), 10):
+        threads.append(
+            threading.Thread(
+                target=lambda: [
+                    setattr(gene, "fitness", fitness(gene, canvas.copy()))
+                    for gene in initial_populations[i : i + 10]
+                ]
+            )
+        )
 
+    for thread in threads:
+        thread.start()
 
-def fitness(objects):
-    # Create a blank canvas
-    canvas = np.full_like(target_image, average_color, dtype=np.uint8)
+    for thread in threads:
+        thread.join()
+    # for i, gene in enumerate(initial_populations):
+    #     gene.fitness = fitness(gene, canvas.copy())
+    #     print(f"Gene {i}: {gene.fitness}", end="\r")
 
-    # Render each object
-    for obj in objects:
-        obj.render(canvas)
+    # Select parents
+    parents = []
+    for i in range(parents_count):
+        print(f"Selecting parents {i}", end="\r")
+        tournament_for_gene_a = np.array(initial_populations)[
+            np.random.choice(
+                len(initial_populations),
+                size=10,
+                replace=False,
+            )
+        ]
+        parents.append(min(tournament_for_gene_a, key=lambda x: x.fitness))
 
-    difference = cv2.absdiff(target_image, canvas)
+    # render parents
+    # test_canvas = canvas.copy()
+    for parent in parents:
+        parent.render(canvas)
 
-    # print(f"Fitness: {np.sum(difference)}")
-    # plot the chart of the difference
-    # plt.imshow(cv2.cvtColor(difference, cv2.COLOR_BGR2RGB))
-    # plt.show()
+    new_population = []
 
-    # cv2.imshow("Canvas", canvas)
-    # cv2.imshow("Difference", difference)
-    # cv2.waitKey(1)
+    # TODO: Make crossover such that it improves the fitness
+    print("Creating new population")
+    for i in range(population_size):
+        parent_a = np.random.choice(parents)
+        parent_b = np.random.choice(parents)
+        child = parent_a.crossover(parent_b)
+        child.mutate()
+        new_population.append(child)
 
-    # Calculate the fitness as the color difference between the target and generated images
-    diff = np.sum(difference)
-    return diff
-
-
-# Parameters
-generations = 5
-mutation_rate = 0.1
-REQUIRED_OBJECTS = 5000
-
-objects = [Gene(target_image, mutation_rate) for _ in range(REQUIRED_OBJECTS)]
-
-# fitness(objects)
-
-# exit()
-
-for gen in range(generations):
-    """
-    1. Create 10 new genes by mutating each of the existing genes
-    2. Calculate the fitness of each gene
-    3. Select the top 100 genes based on fitness
-    4. Repeat
-    """
-
-    print(f"Generation {gen}")
-    canvas = np.full_like(target_image, average_color, dtype=np.uint8)
-    for obj in objects:
-        obj.object.render(canvas)
-
-    cv2.imshow("Top Genes", canvas)
+    cv2.imshow("Canvas", canvas)
     cv2.waitKey(1)
-
-    # 1.
-    new_objects = []
-    for obj in objects:
-        print(obj)
-        new_objects.append(obj)
-        for _ in range(10):
-            new_obj = Gene(target_image, mutation_rate)
-            new_obj.object = obj.object.copy()
-            new_obj.mutate()
-            new_objects.append(new_obj)
-
-    # 2.
-    for obj in new_objects:
-        obj.fitness = fitness([obj.object])
-
-    # 3.
-    new_objects.sort(key=lambda x: x.fitness)
-    objects = new_objects[:REQUIRED_OBJECTS]
-
-    # Display the top genes
-
-    # Check if the best gene has improved
-    if objects[0].fitness < best_fitness:
-        best_fitness = objects[0].fitness
-        print(f"Best Fitness: {best_fitness}")
-
-
-print("Done!")
-print("Objects:", objects)
-
-
-# Display the final result
-canvas = np.full_like(target_image, average_color, dtype=np.uint8)
-for obj in objects:
-    obj.render(canvas)
-
-cv2.imshow("Final Generated Image", canvas)
-cv2.imwrite("generated_output.jpg", canvas)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
