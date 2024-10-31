@@ -1,0 +1,39 @@
+
+# # Evolutionary loop
+# for gen in range(generations):
+#     # Add a new object
+#     new_object = Gene(target_image, mutation_rate)
+#     objects.append(new_object)
+
+#     improved = False  # Track if we find an improvement
+
+#     # Try mutations on the new object
+#     for _ in range(100):  # Limit mutations to avoid infinite loops
+#         # Mutate the object and calculate fitness
+#         new_object.mutate()
+#         new_fitness = fitness(objects)
+
+#         # Check if fitness improved
+#         if new_fitness < best_fitness:
+#             best_fitness = new_fitness
+#             improved = True
+#             break  # Keep this mutation if it improved fitness
+
+#     if not improved:
+#         # If no improvement, remove the latest object
+#         objects.pop()
+
+#     # Display progress
+#     if gen % 10 == 0:
+#         print(f"Generation {gen}, Fitness {best_fitness}")
+#         # Show the current best rendering
+#         # canvas = np.zeros_like(target_image, np.uint8)
+#         # Canvas should be initialized with the average color of the target image
+#         canvas = np.full_like(
+#             target_image, np.mean(target_image, axis=(0, 1), dtype=np.uint8)
+#         )
+
+#         for obj in objects:
+#             obj.render(canvas)
+#         cv2.imshow("Generated Image", canvas)
+#         cv2.waitKey(1)
