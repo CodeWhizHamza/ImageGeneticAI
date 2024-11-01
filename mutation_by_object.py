@@ -8,7 +8,7 @@ import threading
 from Gene import Gene
 
 # Load target image
-target_image_path = "target_image.jpg"
+target_image_path = "target_image_eren.jpg"
 target_image = cv2.imread(target_image_path)
 org_height, org_width, _ = target_image.shape
 
@@ -29,33 +29,40 @@ print("Starting...")
 
 def fitness(gene: Gene, canvas: np.ndarray) -> float:
     gene.render(canvas)
-    return np.mean(colour.difference.delta_e.delta_E_CIE1976(canvas, target_image))
+    return np.sum(colour.difference.delta_e.delta_E_CIE1976(canvas, target_image))
 
 
-population_size = 100
+population_size = 1000
 parents_count = 100
-generations = 1000
-mutation_rate = 0.01
+generations = 10000
+mutation_rate = 0.2
 
 print("Creating initial population...")
 initial_populations = [
     Gene(target_image, mutation_rate) for _ in range(population_size)
 ]
 
-average_color = cv2.mean(target_image)[:3]
-canvas = np.full_like(target_image, average_color, dtype=np.uint8)
+# average_color = cv2.mean(target_image)[:3]
+# canvas = np.full_like(target_image, average_color, dtype=np.uint8)
+
+canvas = np.full_like(target_image, (126, 126, 126), dtype=np.uint8)
+
+last_fitness = float("-inf")
+
+fitness_vs_generation = []
 
 for generation in range(generations):
     print(f"Generation {generation}")
 
     # Calculate fitness
     threads = []
-    for i in range(0, len(initial_populations), 10):
+    items_per_thread = 80
+    for i in range(0, len(initial_populations), items_per_thread):
         threads.append(
             threading.Thread(
                 target=lambda: [
                     setattr(gene, "fitness", fitness(gene, canvas.copy()))
-                    for gene in initial_populations[i : i + 10]
+                    for gene in initial_populations[i : i + items_per_thread]
                 ]
             )
         )
@@ -76,7 +83,7 @@ for generation in range(generations):
         tournament_for_gene_a = np.array(initial_populations)[
             np.random.choice(
                 len(initial_populations),
-                size=10,
+                size=parents_count,
                 replace=False,
             )
         ]
@@ -87,6 +94,8 @@ for generation in range(generations):
     for parent in parents:
         parent.render(canvas)
 
+    current_fitness = np.sum(colour.difference.delta_E_CIE1976(canvas, target_image))
+
     new_population = []
 
     # TODO: Make crossover such that it improves the fitness
@@ -95,8 +104,21 @@ for generation in range(generations):
         parent_a = np.random.choice(parents)
         parent_b = np.random.choice(parents)
         child = parent_a.crossover(parent_b)
+        child.object.adapt_mutation_rate(current_fitness > last_fitness)
         child.mutate()
         new_population.append(child)
 
-    cv2.imshow("Canvas", canvas)
-    cv2.waitKey(1)
+    # cv2.imshow("Canvas", canvas)
+    # cv2.waitKey(1)
+
+    if generation % 50 == 0:
+        fitness_vs_generation.append((generation, current_fitness))
+
+    if generation % 100 == 0:
+        print(f"Generation {generation} Fitness: {current_fitness}")
+        cv2.imwrite(f"records/generated_{generation}.png", canvas)
+
+        plt.plot(*zip(*fitness_vs_generation))
+        plt.savefig(f"plots/fitness_generation_{generation}.png")
+
+    last_fitness = current_fitness
