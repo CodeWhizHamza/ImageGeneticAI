@@ -4,13 +4,13 @@ __pycache__/
 *$py.class
 
 # Images
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.svg
-*.ico
-*.webp
+# *.jpg
+# *.jpeg
+# *.png
+# *.gif
+# *.svg
+# *.ico
+# *.webp
 
 *.zip
 
