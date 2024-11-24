@@ -81,7 +81,7 @@ class Ellipse(Object):
         return new_obj
 
     def crossover(self, other):
-        new_ellipse = Ellipse(self.target_image, self.mutation_rate)
+        new_ellipse = Ellipse(self.target_image, self.mutation_rate, self.max_size)
         new_ellipse.x = int(self.x * 0.5 + other.x * 0.5)
         new_ellipse.y = int(self.y * 0.5 + other.y * 0.5)
         new_ellipse.size = (
@@ -176,7 +176,7 @@ class Rectangle(Object):
         return new_obj
 
     def crossover(self, other):
-        new_rectangle = Rectangle(self.target_image, self.mutation_rate)
+        new_rectangle = Rectangle(self.target_image, self.mutation_rate, self.max_size) 
         new_rectangle.x = int(self.x * 0.5 + other.x * 0.5)
         new_rectangle.y = int(self.y * 0.5 + other.y * 0.5)
         new_rectangle.size = (
@@ -264,7 +264,7 @@ class Triangle(Object):
         return new_obj
 
     def crossover(self, other):
-        new_triangle = Triangle(self.target_image, self.mutation_rate)
+        new_triangle = Triangle(self.target_image, self.mutation_rate, self.max_size)
         new_triangle.x = int(self.x * 0.5 + other.x * 0.5)
         new_triangle.y = int(self.y * 0.5 + other.y * 0.5)
         new_triangle.size = (
@@ -452,7 +452,7 @@ class Gene:
         self.object.render(canvas)
 
     def crossover(self, other):
-        new_gene = Gene(self.target_image, self.mutation_rate)
+        new_gene = Gene(self.target_image, self.mutation_rate, self.max_size)
         new_ellipse = self.object.crossover(other.object)
         new_gene.object = new_ellipse
         return new_gene
