@@ -7,8 +7,15 @@ import threading
 
 from Gene import Gene
 
+import os
+
+if not os.path.exists("records"):
+    os.makedirs("records")
+if not os.path.exists("plots"):
+    os.makedirs("plots")
+
 # Load target image
-target_image_path = "target_image_eren.jpg"
+target_image_path = "source_images/source_image_eren.jpg"
 target_image = cv2.imread(target_image_path)
 org_height, org_width, _ = target_image.shape
 
@@ -34,12 +41,12 @@ def fitness(gene: Gene, canvas: np.ndarray) -> float:
 
 population_size = 1000
 parents_count = 100
-generations = 10000
+generations = 100
 mutation_rate = 0.2
 
 print("Creating initial population...")
 initial_populations = [
-    Gene(target_image, mutation_rate) for _ in range(population_size)
+    Gene(target_image, mutation_rate, 30) for _ in range(population_size)
 ]
 
 # average_color = cv2.mean(target_image)[:3]
