@@ -10,7 +10,7 @@ python = ">=3.10,<3.14"
 opencv-python = "^4.10.0.84"
 colour-science = "^0.4.6"
 matplotlib = "^3.9.2"
-raylib = "^5.5.0.2"
+pillow = "^11.0.0"
 
 
 [build-system]
