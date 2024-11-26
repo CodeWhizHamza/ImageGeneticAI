@@ -314,9 +314,11 @@ class ImageObject(Object):
         self, max_size: int, image_path: str, target_image, mutation_rate: float
     ):
         self.image_path = image_path
+        # print(image_path)
         self.max_size = max_size
         self.target_image = target_image
         self.mutation_rate = mutation_rate
+        self.fitness = float("inf")
 
         self.image = cv2.imread(image_path)
         self.x = random.randint(0, target_image.shape[1] - 1)
@@ -385,14 +387,16 @@ class ImageObject(Object):
         y1_image = max(0, y1_image)
         y2_image = min(image.shape[0], y2_image)
 
-        # Overlay the image on the canvas
-        canvas[y1:y2, x1:x2] = cv2.addWeighted(
+        # Ensure the dimensions are valid
+        if x1 < x2 and y1 < y2 and x1_image < x2_image and y1_image < y2_image:
+            # Overlay the image on the canvas
+            canvas[y1:y2, x1:x2] = cv2.addWeighted(
             image[y1_image:y2_image, x1_image:x2_image],
             self.opacity,
             canvas[y1:y2, x1:x2],
             1 - self.opacity,
             0,
-        )
+            )
 
     def copy(self):
         new_obj = ImageObject(
@@ -408,7 +412,7 @@ class ImageObject(Object):
 
     def crossover(self, other):
         new_image_object = ImageObject(
-            self.max_size, self.image, self.target_image, self.mutation_rate
+            self.max_size, self.image_path, self.target_image, self.mutation_rate
         )
         new_image_object.x = int(self.x * 0.5 + other.x * 0.5)
         new_image_object.y = int(self.y * 0.5 + other.y * 0.5)
