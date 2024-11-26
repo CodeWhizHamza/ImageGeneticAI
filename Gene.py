@@ -4,7 +4,6 @@ import numpy as np
 import os
 from typing import Protocol
 
-
 class Object(Protocol):
     def mutate(self): ...
 
@@ -14,6 +13,33 @@ class Object(Protocol):
 
     def crossover(self, other): ...
 
+class Gene:
+    def __init__(self, target_image: np.ndarray, mutation_rate: float, max_size: int):
+        self.target_image = target_image
+        self.mutation_rate = mutation_rate
+        self.max_size = max_size
+        self.fitness = float("inf")
+        self.object = random.choice([Ellipse, Rectangle, Triangle])(
+            target_image, mutation_rate, max_size
+        )
+
+    def mutate(self):
+        self.object.mutate()
+
+    def render(self, canvas):
+        self.object.render(canvas)
+
+    def crossover(self, other):
+        new_gene = Gene(self.target_image, self.mutation_rate, self.max_size)
+        new_ellipse = self.object.crossover(other.object)
+        new_gene.object = new_ellipse
+        return new_gene
+
+    def __str__(self):
+        return f"Gene({self.object})"
+
+    def __refer__(self):
+        return self.__str__()
 
 class Ellipse(Object):
     def __init__(self, target_image: np.ndarray, mutation_rate: float, max_size: int):
@@ -112,7 +138,6 @@ class Ellipse(Object):
     def __refer__(self):
         return self.__str__()
 
-
 class Rectangle(Object):
     def __init__(self, target_image: np.ndarray, mutation_rate: float, max_size: int):
         self.target_image = target_image
@@ -196,7 +221,6 @@ class Rectangle(Object):
             self.mutation_rate = max(0.01, self.mutation_rate * 0.9)
         else:
             self.mutation_rate = min(0.2, self.mutation_rate * 1.1)
-
 
 class Triangle(Object):
     def __init__(self, target_image: np.ndarray, mutation_rate: float, max_size: int):
@@ -285,7 +309,6 @@ class Triangle(Object):
         else:
             self.mutation_rate = min(0.2, self.mutation_rate * 1.1)
 
-
 class ImageObject(Object):
     def __init__(
         self, max_size: int, image_path: str, target_image, mutation_rate: float
@@ -362,10 +385,6 @@ class ImageObject(Object):
         y1_image = max(0, y1_image)
         y2_image = min(image.shape[0], y2_image)
 
-        print()
-        print(self.image_path)
-        print()
-
         # Overlay the image on the canvas
         canvas[y1:y2, x1:x2] = cv2.addWeighted(
             image[y1_image:y2_image, x1_image:x2_image],
@@ -413,52 +432,6 @@ class ImageObject(Object):
 
     def __str__(self):
         return f"ImageObject(x={self.x}, y={self.y}, size={self.size}, color={self.color}, rotation={self.rotation}, opacity={self.opacity})"
-
-    def __refer__(self):
-        return self.__str__()
-
-
-class Gene:
-    def __init__(self, target_image: np.ndarray, mutation_rate: float, max_size: int):
-        self.target_image = target_image
-        self.mutation_rate = mutation_rate
-        self.max_size = max_size
-        self.fitness = float("inf")
-        self.object = random.choice([Ellipse, Rectangle, Triangle])(
-            target_image, mutation_rate, max_size
-        )
-
-        # images = os.listdir("shapes")
-        # images = [
-        #     "dialogIcon_001.png",
-        #     "dialogIcon_002.png",
-        #     "dialogIcon_003.png",
-        #     "dialogIcon_004.png",
-        #     "dialogIcon_005.png",
-        #     "dialogIcon_006.png",
-        #     "dialogIcon_007.png",
-        # ]
-        # self.object = ImageObject(
-        #     max_size,
-        #     f"shapes/{random.choice(images)}",
-        #     target_image,
-        #     mutation_rate,
-        # )
-
-    def mutate(self):
-        self.object.mutate()
-
-    def render(self, canvas):
-        self.object.render(canvas)
-
-    def crossover(self, other):
-        new_gene = Gene(self.target_image, self.mutation_rate, self.max_size)
-        new_ellipse = self.object.crossover(other.object)
-        new_gene.object = new_ellipse
-        return new_gene
-
-    def __str__(self):
-        return f"Gene({self.object})"
 
     def __refer__(self):
         return self.__str__()
