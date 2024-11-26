@@ -4,6 +4,7 @@ import cv2
 import colour
 import matplotlib.pyplot as plt
 import threading
+from helpers import fitness
 
 from Gene import Gene
 
@@ -15,7 +16,7 @@ if not os.path.exists("plots"):
     os.makedirs("plots")
 
 # Load target image
-target_image_path = "source_images/source_image_eren.jpg"
+target_image_path = "source_images/crumble.jpg"
 target_image = cv2.imread(target_image_path)
 org_height, org_width, _ = target_image.shape
 
@@ -33,24 +34,13 @@ cv2.waitKey(0)
 
 print("Starting...")
 
-
-def fitness(gene: Gene, canvas: np.ndarray) -> float:
-    gene.render(canvas)
-    return np.sum(colour.difference.delta_e.delta_E_CIE1976(canvas, target_image))
-
-
 population_size = 1000
 parents_count = 100
 generations = 100
 mutation_rate = 0.2
 
 print("Creating initial population...")
-initial_populations = [
-    Gene(target_image, mutation_rate, 30) for _ in range(population_size)
-]
-
-# average_color = cv2.mean(target_image)[:3]
-# canvas = np.full_like(target_image, average_color, dtype=np.uint8)
+initial_populations = [Gene(target_image, mutation_rate, 30) for _ in range(population_size)]
 
 canvas = np.full_like(target_image, (126, 126, 126), dtype=np.uint8)
 
@@ -68,7 +58,7 @@ for generation in range(generations):
         threads.append(
             threading.Thread(
                 target=lambda: [
-                    setattr(gene, "fitness", fitness(gene, canvas.copy()))
+                    setattr(gene, "fitness", fitness(gene, canvas.copy(), target_image.copy()))
                     for gene in initial_populations[i : i + items_per_thread]
                 ]
             )
@@ -80,7 +70,7 @@ for generation in range(generations):
     for thread in threads:
         thread.join()
     # for i, gene in enumerate(initial_populations):
-    #     gene.fitness = fitness(gene, canvas.copy())
+    #     gene.fitness = fitness(gene, canvas.copy(), target_image.copy()))
     #     print(f"Gene {i}: {gene.fitness}", end="\r")
 
     # Select parents
