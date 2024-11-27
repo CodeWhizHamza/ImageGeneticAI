@@ -3,11 +3,9 @@ import cv2
 import numpy as np
 import colour
 import PIL.Image
-
-
 class ImageGene:
     def __init__(self, image_path, target_image, max_size, mutation_rate) -> None:
-        if image_path is not "":
+        if image_path != "":
             self.orig_image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         else:
             self.orig_image = np.zeros((100, 100, 4), dtype=np.uint8)
@@ -21,8 +19,8 @@ class ImageGene:
         self.x = random.randint(0, target_image.shape[1] - 1)
         self.y = random.randint(0, target_image.shape[0] - 1)
 
-        self.width = random.randint(1, target_image.shape[1] - self.x)
-        self.height = random.randint(1, target_image.shape[0] - self.y)
+        self.width = random.randint(10, max(10, target_image.shape[1] - self.x))
+        self.height = random.randint(10, max(10, target_image.shape[0] - self.y))
 
         self.color = target_image[self.y, self.x].tolist()
         self.rotation = random.randint(0, 360)
@@ -42,15 +40,21 @@ class ImageGene:
         if random.random() < mutation_rate:
             self.y = random.randint(0, self.target_image.shape[0] - 1)
         if random.random() < mutation_rate:
-            self.width = random.randint(1, self.target_image.shape[1] - self.x)
+            self.width = random.randint(10, max(10, self.target_image.shape[1] - self.x))
         if random.random() < mutation_rate:
-            self.height = random.randint(1, self.target_image.shape[0] - self.y)
+            self.height = random.randint(10, max(10, self.target_image.shape[0] - self.y))
         if random.random() < mutation_rate:
             self.color = self.target_image[self.y, self.x].tolist()
         if random.random() < mutation_rate:
             self.rotation = random.randint(0, 360)
         if random.random() < mutation_rate:
             self.opacity = random.uniform(0.01, 1.0)
+
+    def adapt_mutation_rate(self, fitness_improvement: bool):
+        if fitness_improvement:
+            self.mutation_rate = max(0.01, self.mutation_rate * 0.9)
+        else:
+            self.mutation_rate = min(0.2, self.mutation_rate * 1.1)
 
     def render_gene(self):
         image = self.orig_image.copy()
@@ -106,7 +110,7 @@ class ImageGene:
         else:
             composite = canvas_subsection * (1 - alpha_mask) + overlay_colors * alpha_mask
             canvas[self.y : self.y + h, self.x : self.x + w] = composite
-        
+
         return canvas
 
     def calculate_fitness(self, canvas):
