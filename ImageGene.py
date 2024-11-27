@@ -44,11 +44,11 @@ class ImageGene:
         if random.random() < mutation_rate:
             self.height = random.randint(10, max(10, self.target_image.shape[0] - self.y))
         if random.random() < mutation_rate:
-            self.color = self.target_image[self.y, self.x].tolist()
-        if random.random() < mutation_rate:
             self.rotation = random.randint(0, 360)
         if random.random() < mutation_rate:
             self.opacity = random.uniform(0.01, 1.0)
+        if random.random() < mutation_rate:
+            self.color = self.target_image[self.y, self.x].tolist()
 
     def adapt_mutation_rate(self, fitness_improvement: bool):
         if fitness_improvement:
@@ -59,18 +59,17 @@ class ImageGene:
     def render_gene(self):
         image = self.orig_image.copy()
 
-        # Resize the image to fit within the bounds of the gene
-        image = cv2.resize(image, (self.width, self.height))
-
         # Rotate the image
         image = PIL.Image.fromarray(image)
         image = image.rotate(self.rotation)
         image = np.array(image)
+        # Resize the image to fit within the bounds of the gene
+        image = cv2.resize(image, (self.width, self.height))
 
-        # Apply the color to the image
-        image[:, :, 0] = self.color[0]
-        image[:, :, 1] = self.color[1]
-        image[:, :, 2] = self.color[2]
+        # Apply the color to the image with values proportional to the original color of the image
+        image[:, :, 0] = (image[:, :, 0] * (self.color[0] / 255)).astype(np.uint8)
+        image[:, :, 1] = (image[:, :, 1] * (self.color[1] / 255)).astype(np.uint8)
+        image[:, :, 2] = (image[:, :, 2] * (self.color[2] / 255)).astype(np.uint8)
 
         # Apply the opacity to the image
         image[:, :, 3] = (image[:, :, 3] * self.opacity).astype(np.uint8)
@@ -80,7 +79,7 @@ class ImageGene:
     def render(self, canvas):
         image = self.render_gene()
         alpha_channel = image[:, :, 3] / 255
-        overlay_colors = image[:, :, :3]
+        overlay_colors = image[:, :, :3] 
         alpha_mask = alpha_channel[:, :, np.newaxis]
 
         h, w = image.shape[:2]
