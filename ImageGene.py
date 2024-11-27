@@ -7,7 +7,10 @@ import PIL.Image
 
 class ImageGene:
     def __init__(self, image_path, target_image, max_size, mutation_rate) -> None:
-        self.orig_image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+        if image_path is not "":
+            self.orig_image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+        else:
+            self.orig_image = np.zeros((100, 100, 4), dtype=np.uint8)
         self.mutation_rate = mutation_rate
         self.max_size = max_size
 
@@ -70,34 +73,38 @@ class ImageGene:
 
     def render(self, canvas):
         image = self.render_gene()
-        # Ensure the dimensions match before rendering to the canvas
-
-        # separate the alpha channel from the color channels
         alpha_channel = image[:, :, 3] / 255
         overlay_colors = image[:, :, :3]
-
-        # To take advantage of the speed of numpy and apply transformations to the entire image with a single operation
-        # the arrays need to be the same shape. However, the shapes currently looks like this:
-        #    - overlay_colors shape:(width, height, 3)  3 color values for each pixel, (red, green, blue)
-
-        #    - alpha_channel  shape:(width, height, 1)  1 single alpha value for each pixel
-        # We will construct an alpha_mask that has the same shape as the overlay_colors by duplicate the alpha channel
-        # for each color so there is a 1:1 alpha channel for each color channel
         alpha_mask = alpha_channel[:, :, np.newaxis]
 
-        # The background image is larger than the overlay so we'll take a subsection of the background that matches the
-        # dimensions of the overlay.
-        # NOTE: For simplicity, the overlay is applied to the top-left corner of the background(0,0). An x and y offset
-        # could be used to place the overlay at any position on the background.
         h, w = image.shape[:2]
+        canvas_height, canvas_width = canvas.shape[:2]
+
         canvas_subsection = canvas[self.y : self.y + h, self.x : self.x + w]
 
-        # combine the background with the overlay image weighted by alpha
-        composite = canvas_subsection * (1 - alpha_mask) + overlay_colors * alpha_mask
+        if self.y + h > canvas_height or self.x + w > canvas_width:
+            # Compute safe height and width
+            safe_h = min(h, canvas_height - self.y)
+            safe_w = min(w, canvas_width - self.x)
+            # Extract the subsection of the canvas
+            canvas_subsection = canvas[
+                self.y : self.y + safe_h, self.x : self.x + safe_w
+            ]
+            # Adjust the alpha_mask and overlay_colors to match canvas_subsection
+            adjusted_alpha_mask = alpha_mask[:safe_h, :safe_w, :]
+            adjusted_overlay_colors = overlay_colors[:safe_h, :safe_w, :]
 
-        # overwrite the section of the background image that has been updated
-        canvas[self.y : self.y + h, self.x : self.x + w] = composite
-
+            # Combine the background with the overlay image weighted by alpha
+            composite = (
+                canvas_subsection * (1 - adjusted_alpha_mask)
+                + adjusted_overlay_colors * adjusted_alpha_mask
+            )
+            # Update the section of the canvas
+            canvas[self.y : self.y + safe_h, self.x : self.x + safe_w] = composite
+        else:
+            composite = canvas_subsection * (1 - alpha_mask) + overlay_colors * alpha_mask
+            canvas[self.y : self.y + h, self.x : self.x + w] = composite
+        
         return canvas
 
     def calculate_fitness(self, canvas):
@@ -107,3 +114,16 @@ class ImageGene:
             colour.difference.delta_e.delta_E_CIE1976(canvas, self.target_image)
         )
         return self.fitness
+
+    def copy(self):
+        new_gene = ImageGene("", self.target_image, self.max_size, self.mutation_rate)
+        new_gene.orig_image = self.orig_image.copy()
+        new_gene.x = self.x
+        new_gene.y = self.y
+        new_gene.width = self.width
+        new_gene.height = self.height
+        new_gene.color = self.color.copy()
+        new_gene.rotation = self.rotation
+        new_gene.opacity = self.opacity
+        new_gene.fitness = self.fitness
+        return new_gene
