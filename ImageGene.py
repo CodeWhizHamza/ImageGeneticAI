@@ -34,20 +34,22 @@ class ImageGene:
         else:
             self.mutation_rate = min(0.2, self.mutation_rate * 1.1)
 
-    def mutate(self):
-        if random.random() < self.mutation_rate:
+    def mutate(self, mutation_rate=None):
+        if mutation_rate is None:
+            mutation_rate = self.mutation_rate
+        if random.random() < mutation_rate:
             self.x = random.randint(0, self.target_image.shape[1] - 1)
-        if random.random() < self.mutation_rate:
+        if random.random() < mutation_rate:
             self.y = random.randint(0, self.target_image.shape[0] - 1)
-        if random.random() < self.mutation_rate:
+        if random.random() < mutation_rate:
             self.width = random.randint(1, self.target_image.shape[1] - self.x)
-        if random.random() < self.mutation_rate:
+        if random.random() < mutation_rate:
             self.height = random.randint(1, self.target_image.shape[0] - self.y)
-        if random.random() < self.mutation_rate:
+        if random.random() < mutation_rate:
             self.color = self.target_image[self.y, self.x].tolist()
-        if random.random() < self.mutation_rate:
+        if random.random() < mutation_rate:
             self.rotation = random.randint(0, 360)
-        if random.random() < self.mutation_rate:
+        if random.random() < mutation_rate:
             self.opacity = random.uniform(0.01, 1.0)
 
     def render_gene(self):
