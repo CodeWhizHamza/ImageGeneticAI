@@ -3,7 +3,9 @@ import cv2
 import numpy as np
 import colour
 import PIL.Image
-class ImageGene:
+
+
+class ImageObject:
     def __init__(self, image_path, target_image, max_size, mutation_rate) -> None:
         if image_path != "":
             self.orig_image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
@@ -22,7 +24,9 @@ class ImageGene:
         self.width = random.randint(10, max(10, target_image.shape[1] - self.x))
         self.height = random.randint(10, max(10, target_image.shape[0] - self.y))
 
-        self.color = target_image[self.y, self.x].tolist()
+        self.color = target_image[
+            self.y, self.x
+        ].tolist()  # TODO Change to take the color behind the center of the object
         self.rotation = random.randint(0, 360)
         self.opacity = random.uniform(0.01, 1.0)
 
@@ -40,15 +44,21 @@ class ImageGene:
         if random.random() < mutation_rate:
             self.y = random.randint(0, self.target_image.shape[0] - 1)
         if random.random() < mutation_rate:
-            self.width = random.randint(10, max(10, self.target_image.shape[1] - self.x))
+            self.width = random.randint(
+                10, max(10, self.target_image.shape[1] - self.x)
+            )
         if random.random() < mutation_rate:
-            self.height = random.randint(10, max(10, self.target_image.shape[0] - self.y))
+            self.height = random.randint(
+                10, max(10, self.target_image.shape[0] - self.y)
+            )
         if random.random() < mutation_rate:
             self.rotation = random.randint(0, 360)
         if random.random() < mutation_rate:
             self.opacity = random.uniform(0.01, 1.0)
         if random.random() < mutation_rate:
-            self.color = self.target_image[self.y, self.x].tolist()
+            self.color = self.target_image[
+                self.y, self.x
+            ].tolist()  # TODO Change to take the color behind the center of the object 
 
     def adapt_mutation_rate(self, fitness_improvement: bool):
         if fitness_improvement:
@@ -79,7 +89,7 @@ class ImageGene:
     def render(self, canvas):
         image = self.render_gene()
         alpha_channel = image[:, :, 3] / 255
-        overlay_colors = image[:, :, :3] 
+        overlay_colors = image[:, :, :3]
         alpha_mask = alpha_channel[:, :, np.newaxis]
 
         h, w = image.shape[:2]
@@ -107,7 +117,9 @@ class ImageGene:
             # Update the section of the canvas
             canvas[self.y : self.y + safe_h, self.x : self.x + safe_w] = composite
         else:
-            composite = canvas_subsection * (1 - alpha_mask) + overlay_colors * alpha_mask
+            composite = (
+                canvas_subsection * (1 - alpha_mask) + overlay_colors * alpha_mask
+            )
             canvas[self.y : self.y + h, self.x : self.x + w] = composite
 
         return canvas
@@ -121,7 +133,7 @@ class ImageGene:
         return self.fitness
 
     def copy(self):
-        new_gene = ImageGene("", self.target_image, self.max_size, self.mutation_rate)
+        new_gene = ImageObject("", self.target_image, self.max_size, self.mutation_rate)
         new_gene.orig_image = self.orig_image.copy()
         new_gene.x = self.x
         new_gene.y = self.y
