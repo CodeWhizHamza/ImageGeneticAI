@@ -5,24 +5,24 @@ import colour
 import matplotlib.pyplot as plt
 import threading
 from helpers import fitness
-from ImageGene import ImageGene
+from ImageObject import ImageGene
 import random
 
 random.seed(42)
 
 
 # Load the target image
-target_image = cv2.imread("source_images/cbpunk.jpg")
+target_image = cv2.imread("source_images/crumble.jpg")
 
 # Create a canvas to draw the image on
-canvas = np.zeros_like(target_image)
+canvas = np.full_like(target_image, (126, 126, 126), dtype=np.uint8)
 
 # Create an ImageGene object
 
 while True:
     # Render the gene on the canvas
     image_gene = ImageGene(
-        "shapes/pokeAPI/underground/star-piece.png", target_image, 100, 0.1
+        "shapes/pokeAPI/pokemon/118.png", target_image, 100, 0.1
     )
     image_gene.render(canvas)
 
@@ -34,4 +34,6 @@ while True:
 
     # Display the target image
     cv2.imshow("canvas", canvas)
-    cv2.waitKey(0)
+    
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
