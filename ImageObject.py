@@ -30,6 +30,9 @@ class ImageObject:
         self.rotation = random.randint(0, 360)
         self.opacity = random.uniform(0.01, 1.0)
 
+    def get_image(self):
+        return self.orig_image.copy()
+
     def adapt_mutation_rate(self, fitness_improvement: bool):
         if fitness_improvement:
             self.mutation_rate = max(0.01, self.mutation_rate * 0.9)
@@ -58,7 +61,7 @@ class ImageObject:
         if random.random() < mutation_rate:
             self.color = self.source_image[
                 self.y, self.x
-            ].tolist()  # TODO Change to take the color behind the center of the object 
+            ].tolist()  # TODO Change to take the color behind the center of the object
 
     def adapt_mutation_rate(self, fitness_improvement: bool):
         if fitness_improvement:
@@ -144,3 +147,6 @@ class ImageObject:
         new_gene.opacity = self.opacity
         new_gene.fitness = self.fitness
         return new_gene
+
+    def __str__(self) -> str:
+        return f"ImageObject: x={self.x}, y={self.y}, width={self.width}, height={self.height}, color={self.color}, rotation={self.rotation}, opacity={self.opacity}, fitness={self.fitness}"
