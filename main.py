@@ -13,6 +13,8 @@ import hashlib
 import cv2
 import numpy as np
 import math
+import random
+import matplotlib.pyplot as plt
 
 
 @dataclass
@@ -368,16 +370,18 @@ mutator = GaussianMethod(0.01, 0.3)
 algo = ModifiedGenetic(pointsFactory, 400, 5, evaluatorFactory, mutator)
 
 
-# plot the best polygons
+algo.step()
+
 best = algo.get_best()
 points = np.array([[p.x, p.y] for p in best.points], np.float64)
 tri = Delaunay(points)
+
+# plot the best image
 for simplex in tri.simplices:
-    triangle = points[simplex]
-    cv2.polylines(normalized_image, [triangle], True, (0, 0, 0), 1)
-
-
-algo.step()
+    triangle = points[simplex] * 255
+    triangle = np.array([triangle], np.int32)
+    color = [random.randint(0, 255) for _ in range(3)]
+    cv2.fillPoly(normalized_image, triangle, color)
 
 
 cv2.imshow("sdfas", normalized_image)
