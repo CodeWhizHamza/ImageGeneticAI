@@ -6,7 +6,7 @@ import PIL.Image
 
 
 class ImageObject:
-    def __init__(self, image_path, target_image, max_size, mutation_rate) -> None:
+    def __init__(self, image_path, source_image, max_size, mutation_rate) -> None:
         if image_path != "":
             self.orig_image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         else:
@@ -16,19 +16,22 @@ class ImageObject:
 
         self.fitness = float("inf")
 
-        self.target_image = target_image
+        self.source_image = source_image
 
-        self.x = random.randint(0, target_image.shape[1] - 1)
-        self.y = random.randint(0, target_image.shape[0] - 1)
+        self.x = random.randint(0, source_image.shape[1] - 1)
+        self.y = random.randint(0, source_image.shape[0] - 1)
 
-        self.width = random.randint(10, max(10, target_image.shape[1] - self.x))
-        self.height = random.randint(10, max(10, target_image.shape[0] - self.y))
+        self.width = random.randint(10, max(10, source_image.shape[1] - self.x))
+        self.height = random.randint(10, max(10, source_image.shape[0] - self.y))
 
-        self.color = target_image[
+        self.color = source_image[
             self.y, self.x
         ].tolist()  # TODO Change to take the color behind the center of the object
         self.rotation = random.randint(0, 360)
         self.opacity = random.uniform(0.01, 1.0)
+
+    def get_image(self):
+        return self.orig_image.copy()
 
     def adapt_mutation_rate(self, fitness_improvement: bool):
         if fitness_improvement:
@@ -40,25 +43,25 @@ class ImageObject:
         if mutation_rate is None:
             mutation_rate = self.mutation_rate
         if random.random() < mutation_rate:
-            self.x = random.randint(0, self.target_image.shape[1] - 1)
+            self.x = random.randint(0, self.source_image.shape[1] - 1)
         if random.random() < mutation_rate:
-            self.y = random.randint(0, self.target_image.shape[0] - 1)
+            self.y = random.randint(0, self.source_image.shape[0] - 1)
         if random.random() < mutation_rate:
             self.width = random.randint(
-                10, max(10, self.target_image.shape[1] - self.x)
+                10, max(10, self.source_image.shape[1] - self.x)
             )
         if random.random() < mutation_rate:
             self.height = random.randint(
-                10, max(10, self.target_image.shape[0] - self.y)
+                10, max(10, self.source_image.shape[0] - self.y)
             )
         if random.random() < mutation_rate:
             self.rotation = random.randint(0, 360)
         if random.random() < mutation_rate:
             self.opacity = random.uniform(0.01, 1.0)
         if random.random() < mutation_rate:
-            self.color = self.target_image[
+            self.color = self.source_image[
                 self.y, self.x
-            ].tolist()  # TODO Change to take the color behind the center of the object 
+            ].tolist()  # TODO Change to take the color behind the center of the object
 
     def adapt_mutation_rate(self, fitness_improvement: bool):
         if fitness_improvement:
@@ -125,15 +128,15 @@ class ImageObject:
         return canvas
 
     def calculate_fitness(self, canvas):
-        if canvas is None or self.target_image is None:
+        if canvas is None or self.source_image is None:
             raise ValueError("Canvas or target image is None")
         self.fitness = np.sum(
-            colour.difference.delta_e.delta_E_CIE1976(canvas, self.target_image)
+            colour.difference.delta_e.delta_E_CIE1976(canvas, self.source_image)
         )
         return self.fitness
 
     def copy(self):
-        new_gene = ImageObject("", self.target_image, self.max_size, self.mutation_rate)
+        new_gene = ImageObject("", self.source_image, self.max_size, self.mutation_rate)
         new_gene.orig_image = self.orig_image.copy()
         new_gene.x = self.x
         new_gene.y = self.y
@@ -144,3 +147,6 @@ class ImageObject:
         new_gene.opacity = self.opacity
         new_gene.fitness = self.fitness
         return new_gene
+
+    def __str__(self) -> str:
+        return f"ImageObject: x={self.x}, y={self.y}, width={self.width}, height={self.height}, color={self.color}, rotation={self.rotation}, opacity={self.opacity}, fitness={self.fitness}"
