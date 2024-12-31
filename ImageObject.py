@@ -130,8 +130,9 @@ class ImageObject:
     def calculate_fitness(self, canvas):
         if canvas is None or self.source_image is None:
             raise ValueError("Canvas or target image is None")
+        output_new_canvas = self.render(canvas)
         self.fitness = np.sum(
-            colour.difference.delta_e.delta_E_CIE1976(canvas, self.source_image)
+            colour.difference.delta_e.delta_E_CIE1976(self.source_image, output_new_canvas)
         )
         return self.fitness
 
