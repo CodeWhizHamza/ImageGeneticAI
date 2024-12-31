@@ -347,6 +347,9 @@ with open("./config.json") as f:
 
 # Load image
 image = cv2.imread(config["image"])
+# reduce to half maintaining aspect ratio
+image = cv2.resize(image, (0, 0), fx=0.8, fy=0.8)
+
 normalized_image = normalize(image)
 
 
@@ -369,20 +372,46 @@ def evaluatorFactory(n: int):
 mutator = GaussianMethod(0.01, 0.3)
 algo = ModifiedGenetic(pointsFactory, 400, 5, evaluatorFactory, mutator)
 
+for _ in range(10):
+    algo.step()
+    print(algo.get_stats())
 
-algo.step()
+    best = algo.get_best()
+    points = np.array([[p.x, p.y] for p in best.points], np.float64)
+    tri = Delaunay(points)
 
-best = algo.get_best()
-points = np.array([[p.x, p.y] for p in best.points], np.float64)
-tri = Delaunay(points)
+    for simplex in tri.simplices:
+        triangle = points[simplex]
+        triangle = (triangle * np.array([image.shape[1], image.shape[0]])).astype(
+            np.int32
+        )
 
-# plot the best image
-for simplex in tri.simplices:
-    triangle = points[simplex] * 255
-    triangle = np.array([triangle], np.int32)
-    color = [random.randint(0, 255) for _ in range(3)]
-    cv2.fillPoly(normalized_image, triangle, color)
+        A = np.array(triangle[0])
+        B = np.array(triangle[1])
+        C = np.array(triangle[2])
+
+        # Lengths of the sides
+        a = np.linalg.norm(B - C)  # Length of side BC
+        b = np.linalg.norm(A - C)  # Length of side AC
+        c = np.linalg.norm(A - B)  # Length of side AB
+
+        # Calculate the incenter
+        incenter = (a * A + b * B + c * C) / (a + b + c)
+
+        # take color from the original image using the incenter
+        color = (image[int(incenter[1]), int(incenter[0])] / 255).tolist()
+        print(incenter, np.array(color))
+
+        triangle = np.array([triangle], np.int32)
+        cv2.fillPoly(
+            normalized_image,
+            triangle,
+            color,
+        )
+
+    cv2.imshow("sdfas", normalized_image)
+    cv2.waitKey(4)
 
 
-cv2.imshow("sdfas", normalized_image)
-cv2.waitKey(0)
+# cv2.imshow("sdfas", normalized_image)
+# cv2.waitKey(0)
