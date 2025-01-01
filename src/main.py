@@ -5,11 +5,11 @@ import colour
 import os
 import shutil
 
-from Gene import Gene
+from Gene import Genome
 
 # Load target image
-image_name = "me_and_ahmed"
-target_image_path = f"{image_name}.jpg"
+image_name = "eren"
+target_image_path = f"source_images/shrek.jpg"
 
 os.makedirs(image_name, exist_ok=True)
 
@@ -50,7 +50,7 @@ max_size = 100
 # Evolutionary loop
 for gen in range(generations):
     # Add a new object
-    obj1 = Gene(target_image, mutation_rate, max_size)
+    obj1 = Genome(target_image, mutation_rate, max_size)
     # objects.append(new_object)
 
     improved = False  # Track if we find an improvement

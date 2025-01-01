@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import random
 
-from Gene import Gene
+from Gene import Genome
 
 TOTAL_OBJECTS = 5000
 
@@ -47,7 +47,8 @@ def fitness(objects):
 
 # Initialize population
 population = [
-    [Gene(target_image, mutation_rate) for _ in range(TOTAL_OBJECTS)] for _ in range(population_size)
+    [Genome(target_image, mutation_rate) for _ in range(TOTAL_OBJECTS)]
+    for _ in range(population_size)
 ]  # Each individual has 10 objects
 
 # Evolutionary loop
@@ -80,15 +81,15 @@ for gen in range(generations):
     # # Display progress
     # if gen % 1 == 0:
     #     print(f"Generation {gen}, Fitness {min(fitness_scores)}")
-        # display the generated image
-        # best_individual = sorted_population[0]
-        # canvas = np.zeros_like(target_image, np.uint8)
-        # for obj in best_individual:
-        #     obj.render(canvas)
+    # display the generated image
+    # best_individual = sorted_population[0]
+    # canvas = np.zeros_like(target_image, np.uint8)
+    # for obj in best_individual:
+    #     obj.render(canvas)
 
-        # cv2.imshow("Generated Image", canvas)
-        # # delay for 1ms
-        # cv2.waitKey(1)
+    # cv2.imshow("Generated Image", canvas)
+    # # delay for 1ms
+    # cv2.waitKey(1)
 
 
 # Display final result

@@ -4,6 +4,7 @@ import numpy as np
 import os
 from typing import Protocol
 
+
 class Object(Protocol):
     def mutate(self): ...
 
@@ -13,15 +14,14 @@ class Object(Protocol):
 
     def crossover(self, other): ...
 
-class Gene:
+
+class Genome:
     def __init__(self, target_image: np.ndarray, mutation_rate: float, max_size: int):
         self.target_image = target_image
         self.mutation_rate = mutation_rate
         self.max_size = max_size
         self.fitness = float("inf")
-        self.object = random.choice([Ellipse, Rectangle, Triangle])(
-            target_image, mutation_rate, max_size
-        )
+        self.object = random.choice([Ellipse])(target_image, mutation_rate, max_size)
 
     def mutate(self):
         self.object.mutate()
@@ -30,7 +30,7 @@ class Gene:
         self.object.render(canvas)
 
     def crossover(self, other):
-        new_gene = Gene(self.target_image, self.mutation_rate, self.max_size)
+        new_gene = Genome(self.target_image, self.mutation_rate, self.max_size)
         new_ellipse = self.object.crossover(other.object)
         new_gene.object = new_ellipse
         return new_gene
@@ -40,6 +40,7 @@ class Gene:
 
     def __refer__(self):
         return self.__str__()
+
 
 class Ellipse(Object):
     def __init__(self, target_image: np.ndarray, mutation_rate: float, max_size: int):
@@ -138,6 +139,7 @@ class Ellipse(Object):
     def __refer__(self):
         return self.__str__()
 
+
 class Rectangle(Object):
     def __init__(self, target_image: np.ndarray, mutation_rate: float, max_size: int):
         self.target_image = target_image
@@ -201,7 +203,7 @@ class Rectangle(Object):
         return new_obj
 
     def crossover(self, other):
-        new_rectangle = Rectangle(self.target_image, self.mutation_rate, self.max_size) 
+        new_rectangle = Rectangle(self.target_image, self.mutation_rate, self.max_size)
         new_rectangle.x = int(self.x * 0.5 + other.x * 0.5)
         new_rectangle.y = int(self.y * 0.5 + other.y * 0.5)
         new_rectangle.size = (
@@ -221,6 +223,7 @@ class Rectangle(Object):
             self.mutation_rate = max(0.01, self.mutation_rate * 0.9)
         else:
             self.mutation_rate = min(0.2, self.mutation_rate * 1.1)
+
 
 class Triangle(Object):
     def __init__(self, target_image: np.ndarray, mutation_rate: float, max_size: int):
@@ -309,6 +312,7 @@ class Triangle(Object):
         else:
             self.mutation_rate = min(0.2, self.mutation_rate * 1.1)
 
+
 class ImageObject(Object):
     def __init__(
         self, max_size: int, image_path: str, target_image, mutation_rate: float
@@ -391,11 +395,11 @@ class ImageObject(Object):
         if x1 < x2 and y1 < y2 and x1_image < x2_image and y1_image < y2_image:
             # Overlay the image on the canvas
             canvas[y1:y2, x1:x2] = cv2.addWeighted(
-            image[y1_image:y2_image, x1_image:x2_image],
-            self.opacity,
-            canvas[y1:y2, x1:x2],
-            1 - self.opacity,
-            0,
+                image[y1_image:y2_image, x1_image:x2_image],
+                self.opacity,
+                canvas[y1:y2, x1:x2],
+                1 - self.opacity,
+                0,
             )
 
     def copy(self):
