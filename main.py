@@ -219,6 +219,9 @@ class TrianglesImageFitness:
         self.block_size = block_size
         self.max_difference = max_difference
         self.triangle_cache: dict = {}  # Cache for storing triangle fitness results
+        self.triangulation_cache: dict = {}  # Cache for storing triangulation results
+        self.next_cache: dict = {}  # Cache for storing next generation results
+        self.base: np.ndarray = None
 
     def _hash_triangle(self, points):
         """
@@ -235,15 +238,28 @@ class TrianglesImageFitness:
         if not isinstance(points, NormPointArray):
             raise TypeError("Expected NormPointArray, got {}".format(type(points)))
 
-        points = np.array([[p.x, p.y] for p in points.points], np.float64)
+        if len(self.triangulation_cache) == 0:
+            points = np.array([[p.x, p.y] for p in points.points], np.float64)
+            tri = Delaunay(points)
+            self.triangulation_cache = points
+        elif self.base is not None:
+            tri = self.base
 
-        # Triangulate the points
-        tri = Delaunay(points)
+            mutations: List[Mutation] = pointsData.get("mutations")
+            if mutations is None:
+                ValueError("Expected mutations in pointsData")
+
+            for m in mutations:
+                tri.points[m.index] = [m.new.x, m.new.y]
+
+        base = None
+
         difference = 0
         total_area = 0
 
         for simplex in tri.simplices:
             pts = points[simplex]
+            pts = (pts * np.array([w, h])).astype(np.int32)
             triangle_hash = self._hash_triangle(pts)
 
             # Check the cache first
@@ -301,7 +317,7 @@ class ParallelEvaluator:
         evaluator = self.evaluators[i]
 
         # Put triangles calculated from the fitness function into the cache
-        for key, data in evaluator.triangle_cache.items():
+        for key, data in evaluator.triangle_cache.copy().items():
             self.cache[key] = data
 
         evaluator.set_cache(self.cache)
@@ -370,7 +386,7 @@ def evaluatorFactory(n: int):
 
 
 mutator = GaussianMethod(0.01, 0.3)
-algo = ModifiedGenetic(pointsFactory, 400, 5, evaluatorFactory, mutator)
+algo = ModifiedGenetic(pointsFactory, 100, 5, evaluatorFactory, mutator)
 
 for _ in range(10):
     algo.step()
@@ -400,7 +416,6 @@ for _ in range(10):
 
         # take color from the original image using the incenter
         color = (image[int(incenter[1]), int(incenter[0])] / 255).tolist()
-        print(incenter, np.array(color))
 
         triangle = np.array([triangle], np.int32)
         cv2.fillPoly(
@@ -410,7 +425,8 @@ for _ in range(10):
         )
 
     cv2.imshow("sdfas", normalized_image)
-    cv2.waitKey(4)
+    cv2.waitKey(1000)
+    cv2.destroyAllWindows()
 
 
 # cv2.imshow("sdfas", normalized_image)
