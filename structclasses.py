@@ -19,13 +19,11 @@ class NormPoint:
     def copy(self):
         return NormPoint(self.x, self.y)
 
-
 @dataclass
 class Mutation:
     old: NormPoint
     new: NormPoint
     index: int
-
 
 @dataclass
 class NormPointArray:
@@ -63,3 +61,26 @@ class GaussianMethod:
             new_point = NormPoint(new_x, new_y)
             new_point.constrain()
             callback(Mutation(point, new_point, i))
+
+@dataclass
+class FitnessData:
+    fitness: float
+    i: int
+    
+@dataclass
+class MutationsData:
+    mutations: List[Mutation]
+    indexes: List[int]
+    
+    def clear(self):
+        self.mutations = []
+        self.indexes = []
+        
+    def count(self):
+        return len(self.mutations)
+
+@dataclass
+class Stats:
+    best_fitness: float
+    generation: int
+    time_for_gen: float

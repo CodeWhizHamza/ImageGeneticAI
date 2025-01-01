@@ -19,18 +19,22 @@ class ModifiedGenetic:
         evaluatorsFactory,
         mutator: GaussianMethod,
     ):
-        self.population = [pointsFactory() for _ in range(size)]
+        self.evaluator: ParallelEvaluator = evaluatorsFactory(size)
+        self.mutator: GaussianMethod = mutator
+        self.population: List[NormPointArray] = [pointsFactory() for _ in range(size)]
         self.new_population = [copy.deepcopy(pg) for pg in self.population]
-        self.best: NormPointArray = copy.deepcopy(self.population[0])
-        self.evaluator = evaluatorsFactory(size)
-        self.fitnesses = [{"index": i, "fitness": 0} for i in range(size)]
-        self.mutations: List[List[Mutation]] = [[] for _ in range(size)]
-        self.beneficial_mutations: List[dict] = [
-            {"mutations": [], "indexes": []} for _ in range(cutoff)
+        self.fitnesses: List[FitnessData] = [
+            FitnessData(0, i) for i in range(size)
         ]
-        self.mutator = mutator
-        self.cutoff = cutoff
-        self.stats: dict = {"generation": 0, "time_for_gen": 0, "best_fitness": 0}
+        self.mutations: List[List[Mutation]] = [[] for _ in range(size)]
+        self.beneficial_mutations: List[MutationsData] = [
+            MutationsData(
+                mutations=[], indexes=[]
+                ) for _ in range(cutoff)
+        ]
+        self.best: NormPointArray = copy.deepcopy(self.population[0])
+        self.cutoff:int = cutoff
+        self.stats: Stats = Stats(0, 0, 0)
         self.calculateFitnesses()
         self.updateFitnesses()
 
@@ -40,8 +44,8 @@ class ModifiedGenetic:
         self.calculateFitnesses()
         self.combineMutations()
         self.updateFitnesses()
-        self.stats["generation"] += 1
-        self.stats["time_for_gen"] = time.time() - start_time
+        self.stats.generation += 1
+        self.stats.time_for_gen = time.time() - start_time
 
     def newGeneration(self):
         i = 0
@@ -62,8 +66,8 @@ class ModifiedGenetic:
                 i += 1
 
         for bm in self.beneficial_mutations:
-            bm["mutations"].clear()
-            bm["indexes"].clear()
+            bm.mutations.clear()
+            bm.indexes.clear()
 
         self.population, self.new_population = self.new_population, self.population
 
@@ -79,10 +83,12 @@ class ModifiedGenetic:
         self.evaluator.prepare()
 
     def _calculate_fitness(self, i, p, e):
-        fit = e.calculate({"points": p, "mutations": self.mutations[i]})
-        self.fitnesses[i]["fitness"] = fit
+        fit = e.calculate(
+            PointsData(points=p, mutations=self.mutations[i])
+        )
+        self.fitnesses[i].fitness = fit
         self.evaluator.update(i)
-        if fit > self.fitnesses[self.get_base(i)]["fitness"]:
+        if fit > self.fitnesses[self.get_base(i)].fitness:
             self.set_beneficial(i)
 
     def set_beneficial(self, index):
@@ -90,48 +96,51 @@ class ModifiedGenetic:
         for m in self.mutations[index]:
             found = False
             found_index = -1
-            for i, o in enumerate(self.beneficial_mutations[base]["mutations"]):
-                if m["index"] == o["index"]:
+            for i, o in enumerate(self.beneficial_mutations[base].mutations): # TODO: Check this !!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+                if m.index == o.index:
                     found = True
                     found_index = i
                     break
             if not found:
-                self.beneficial_mutations[base]["mutations"].append(m)
-                self.beneficial_mutations[base]["indexes"].append(index)
+                self.beneficial_mutations[base].mutations.append(m)
+                self.beneficial_mutations[base].indexes.append(index)
             else:
-                other = self.beneficial_mutations[base]["indexes"][found_index]
-                if self.fitnesses[index]["fitness"] > self.fitnesses[other]["fitness"]:
-                    self.beneficial_mutations[base]["mutations"][found_index] = m
-                    self.beneficial_mutations[base]["indexes"][found_index] = index
+                other = self.beneficial_mutations[base].indexes[found_index]
+                if self.fitnesses[index].fitness > self.fitnesses[other].fitness:
+                    self.beneficial_mutations[base].mutations[found_index] = m
+                    self.beneficial_mutations[base].indexes[found_index] = index
 
     def combineMutations(self):
         for i in range(len(self.population) - self.cutoff, len(self.population)):
             self.mutations[i] = []
             base = self.get_base(i)
-            if len(self.beneficial_mutations[base]["mutations"]) > 0:
+            if len(self.beneficial_mutations[base].mutations) > 0:
                 self.population[i] = copy.deepcopy(self.population[base])
                 self.evaluator.set_base(i, base)
-                for m in self.beneficial_mutations[base]["mutations"]:
-                    self.population[i][m["index"]]["x"] = m["new"]["x"]
-                    self.population[i][m["index"]]["y"] = m["new"]["y"]
+                for m in self.beneficial_mutations[base].mutations:
+                    self.population[i].points[m.index].x = m.new.x
+                    self.population[i].points[m.index].y = m.new.y
+                    # OLD ^^^^^
+                    # self.population[i].points.x = m.new.x
+                    # self.population[i].points.y = m.new.y
                     self.mutations[i].append(m)
                 e = self.evaluator.get(i)
                 fit = e.calculate(
-                    {"points": self.population[i], "mutations": self.mutations[i]}
+                    PointsData(points=self.population[i], mutations=self.mutations[i])
                 )
-                self.fitnesses[i]["fitness"] = fit
+                self.fitnesses[i].fitness = fit
                 self.evaluator.update(i)
             else:
-                self.fitnesses[i]["fitness"] = 0
+                self.fitnesses[i].fitness = 0
 
     def updateFitnesses(self):
         self.population = sorted(
             self.population,
-            key=lambda x: self.fitnesses[self.population.index(x)]["fitness"],
+            key=lambda x: self.fitnesses[self.population.index(x)].fitness,
         )
 
         self.best = copy.deepcopy(self.population[0])
-        self.stats["best_fitness"] = self.fitnesses[0]["fitness"]
+        self.stats.best_fitness = self.fitnesses[0].fitness
 
     def get_base(self, index):
         return index % self.cutoff
@@ -147,12 +156,12 @@ class TrianglesImageFitness:
     def __init__(
         self, target_image: np.ndarray, block_size: int, max_difference: float
     ):
-        self.target = target_image
-        self.block_size = block_size
-        self.max_difference = max_difference
+        self.target:np.ndarray = target_image
+        self.block_size:int = block_size
+        self.max_difference:int = max_difference
         self.triangle_cache: dict = {}  # Cache for storing triangle fitness results
-        self.triangulation_cache: dict = {}  # Cache for storing triangulation results
         self.next_cache: dict = {}  # Cache for storing next generation results
+        self.triangulation: Delaunay = None
         self.base: np.ndarray = None
 
     def _hash_triangle(self, points):
@@ -161,23 +170,23 @@ class TrianglesImageFitness:
         """
         return hashlib.md5(points.tobytes()).hexdigest()
 
-    def calculate(self, pointsData: dict) -> float:
+    def calculate(self, pointsData: PointsData) -> float:
         """
         Calculate the fitness of a set of points.
         """
         h, w, _ = self.target.shape
-        points = pointsData.get("points")
+        points = pointsData.points
         if not isinstance(points, NormPointArray):
             raise TypeError("Expected NormPointArray, got {}".format(type(points)))
 
-        if len(self.triangulation_cache) == 0:
+        if self.triangulation is None:
             points = np.array([[p.x, p.y] for p in points.points], np.float64)
             tri = Delaunay(points)
             self.triangulation_cache = points
         elif self.base is not None:
             tri = self.base
 
-            mutations: List[Mutation] = pointsData.get("mutations")
+            mutations: List[Mutation] = pointsData.mutations
             if mutations is None:
                 ValueError("Expected mutations in pointsData")
 
@@ -186,6 +195,7 @@ class TrianglesImageFitness:
 
         base = None
 
+        # tri = Delaunay(points)
         difference = 0
         total_area = 0
 
