@@ -84,3 +84,32 @@ class Stats:
     best_fitness: float
     generation: int
     time_for_gen: float
+
+@dataclass
+class TriangleCacheData:
+    aX: int
+    aY: int
+    bX: int
+    bY: int
+    cX: int
+    cY: int
+    fitness: float
+    hash: int
+
+    def data(self):
+        return self.fitness
+
+    def equals(self, other):
+        tri = other
+        return self.aX == tri.aX and self.aY == tri.aY and self.bX == tri.bX and self.bY == tri.bY and self.cX == tri.cX and self.cY == tri.cY
+
+    def hash(self):
+        x = self.aX + self.bX + self.cX
+        y = self.aY + self.bY + self.cY
+        return (97 + x) * 97 + y
+
+    def cached_hash(self):
+        return self.hash
+
+    def set_cached_hash(self, hash):
+        self.hash = hash
