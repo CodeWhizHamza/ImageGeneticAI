@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import threading
 from helpers import fitness
 
-from Gene import Gene
+from Gene import Genome
 
 import os
 
@@ -36,11 +36,13 @@ print("Starting...")
 
 population_size = 1000
 parents_count = 100
-generations = 100
+generations = 40000
 mutation_rate = 0.2
 
 print("Creating initial population...")
-initial_populations = [Gene(target_image, mutation_rate, 30) for _ in range(population_size)]
+initial_populations = [
+    Genome(target_image, mutation_rate, 30) for _ in range(population_size)
+]
 
 canvas = np.full_like(target_image, (126, 126, 126), dtype=np.uint8)
 
@@ -58,7 +60,11 @@ for generation in range(generations):
         threads.append(
             threading.Thread(
                 target=lambda: [
-                    setattr(gene, "fitness", fitness(gene, canvas.copy(), target_image.copy()))
+                    setattr(
+                        gene,
+                        "fitness",
+                        fitness(gene, canvas.copy(), target_image.copy()),
+                    )
                     for gene in initial_populations[i : i + items_per_thread]
                 ]
             )
