@@ -18,32 +18,33 @@ AI Project Proposal: Image Generation Using Generative AI with Minimal Objects}
 \today}
 
 \author{
-    \centering
-    \IEEEauthorblockN{Muhammad Hamza}
-    \IEEEauthorblockA{
-    `   407251 \\
-        Department of Computing \\
-        NUST SEECS \\
-        \texttt{mhamza.bscs22seecs\\@seecs.edu.pk}
-    }
-    \and
+	\IEEEauthorblockN{Muhammad Hamza}
+	\IEEEauthorblockA{
+		407251 \\
+		Department of Computing \\
+		NUST SEECS \\
+		\texttt{mhamza.bscs22seecs}\\
+		\texttt{@seecs.edu.pk}
+}
+\and
     \IEEEauthorblockN{Aqsa Batool}
     \IEEEauthorblockA{
-        413777 \\
-        Department of Computing \\
-        NUST SEECS \\
-        \texttt{abatool.bscs22seecs\\@seecs.edu.pk}
-    }
-    \and
+	    413777 \\
+	    Department of Computing \\
+	    NUST SEECS \\
+	    \texttt{abatool.bscs22seecs}\\
+        \texttt{@seecs.edu.pk}
+}
+\and
     \IEEEauthorblockN{Ahmed Mohiuddin Shah}
     \IEEEauthorblockA{
         415216 \\
         Department of Computing \\
         NUST SEECS \\
-        \texttt{ashah.bscs22seecs\\@seecs.edu.pk}
-    }
+        \texttt{ashah.bscs22seecs}\\
+        \texttt{@seecs.edu.pk}
 }
-
+}
 \begin{document}
 \maketitle
 \vspace{-1cm}
@@ -74,33 +75,33 @@ While existing research highlights various generative techniques, few approaches
 Initial prototypes have been developed to test the feasibility of our approach. Early results indicate promising outcomes, where generated images closely resemble their originals with fewer objects. The next phase involves refining the model architecture and performing comprehensive evaluations to benchmark performance against current methods.
 
 \subsection*{
-Initial Test
+	Initial Test
 }
 We did an initial test with 10,000 generation steps on a basic model which only uses ellipses:\\
 \begin{figure}[h]
-    \centering
-    \begin{subfigure}{0.4\linewidth}
-        \centering
-        \includegraphics[width=\linewidth]{eren orig.png}
-        \caption{Original Image}
-    \end{subfigure}%
-    \hfill
-    \begin{subfigure}{0.4\linewidth}
-        \centering
-        \includegraphics[width=\linewidth]{fitness_generation_9900.png}
-        \caption{Fitness Graph}
-    \end{subfigure}
-    \begin{subfigure}{0.4\linewidth}
-        \centering
-        \includegraphics[width=\linewidth]{generated_100.png}
-        \caption{100 generations}
-    \end{subfigure}
-    \begin{subfigure}{0.4\linewidth}
-        \centering
-        \includegraphics[width=\linewidth]{generated_9900.png}
-        \caption{9900 generations}
-    \end{subfigure}
-    \caption{Recreating original image using basic Algoritm Implementation}
+	\centering
+	\begin{subfigure}{0.4\linewidth}
+		\centering
+		\includegraphics[width=\linewidth]{eren orig.png}
+		\caption{Original Image}
+	\end{subfigure}%
+	\hfill
+	\begin{subfigure}{0.4\linewidth}
+		\centering
+		\includegraphics[width=\linewidth]{fitness_generation_9900.png}
+		\caption{Fitness Graph}
+	\end{subfigure}
+	\begin{subfigure}{0.4\linewidth}
+		\centering
+		\includegraphics[width=\linewidth]{generated_100.png}
+		\caption{100 generations}
+	\end{subfigure}
+	\begin{subfigure}{0.4\linewidth}
+		\centering
+		\includegraphics[width=\linewidth]{generated_9900.png}
+		\caption{9900 generations}
+	\end{subfigure}
+	\caption{Recreating original image using basic Algoritm Implementation}
 \end{figure}
 
 Using fitness graph, we can see that our fitness has stagnated and isn't going much further.
@@ -108,35 +109,35 @@ Using fitness graph, we can see that our fitness has stagnated and isn't going m
 \section{Contributions of Each Member}
 
 \begin{enumerate}[label=\arabic*)]
-    \item  Each member contributed 2 research paper each and analysed them for literature review and feasibility study.
-    \item \textbf{Aqsa Batool}: Conducted literature review and analyzed existing methods focused on object constraints.
-    \item \textbf{Muhammad Hamza}: Focused on comparing traditional approaches and implementing optimization techniques.
-    \item \textbf{Ahmed Mohiuddin Shah}: Led prototype development and testing and analyzed hardware constraints.
+	\item  Each member contributed 2 research paper each and analysed them for literature review and feasibility study.
+	\item \textbf{Aqsa Batool}: Conducted literature review and analyzed existing methods focused on object constraints.
+	\item \textbf{Muhammad Hamza}: Focused on comparing traditional approaches and implementing optimization techniques.
+	\item \textbf{Ahmed Mohiuddin Shah}: Led prototype development and testing and analyzed hardware constraints.
 \end{enumerate}
 
 \section{References}
 \begin{itemize}
-    \item \textbf{\hyperref[sec:1]{[1]\label{sec:1r}}} Mirjalili, S., Song Dong, J., Sadiq, A.S., Faris, H. (2020). Genetic Algorithm: Theory, Literature Review, and Application in Image Reconstruction. In: Mirjalili, S., Song Dong, J., Lewis, A. (eds) Nature-Inspired Optimizers. Studies in Computational Intelligence, vol 811. Springer, Cham. 
-    \url{https://doi.org/10.1007/978-3-030-12127-3_5}
-    
-    \item \textbf{\hyperref[sec:2]{[2]\label{sec:2r}}} Holland, J. H. (1992). Genetic Algorithms. Scientific American, 267(1), 66–73. \url{http://www.jstor.org/stable/24939139}
-    \item \textbf{\hyperref[sec:3]{[3]\label{sec:3r}}} Genetic Algorithms
- STEPHANIE FORREST
- Department of Computer Science, University of New Mexico, Albuquerque forrest@cs.unm.edu 
- \url{https://dl.acm.org/doi/pdf/10.1145/234313.234350}
-    \item \textbf{\hyperref[sec:4]{[4]\label{sec:4r}}} A Genetic Algorithm Approach to Regenerate Image from a Reduce Scaled Image Using Bit Data Count Kishor Datta Gupta Ph.D. Student, Computer Science University of Memphis, United States of America 3720 Alumni Ave, Memphis, TN 38152, USA kdgupt1@memphis.edu Sajib Sen Ph.D. Student, Computer Science University of Memphis, United States of America 3720 Alumni Ave, Memphis, TN 38152, USA ssen4@memphis.edu \url{https://lumenpublishing.com/journals/index.php/brain/article/view/2031/1688}
-    
-    \item \textbf{\hyperref[sec:5]{[5]\label{sec:5r}}} \url{https://github.com/SebastianCharmot/Genetic-Algorithm-Image-Recreation/blob/master/CSC_370_Final_Project_Sebastian_Daniel.pdf}
-    Genetic Programming for Non-Photorealistic Image Generation
-  Sebastian Charmot and Daniel Cowan 
-secharmot,
-dacowan@
-davidson.edu
- Davidson College
- Davidson, NC 28035
- U.S.A.
- 
-    \item \textbf{\hyperref[sec:6]{[6]\label{sec:6r}}} Baniasadi, M., Ross, B.J. Exploring non-photorealistic rendering with genetic programming. Genet Program Evolvable Mach 16, 211–239 (2015). \url{https://doi.org/10.1007/s10710-014-9234-0}
+	\item \textbf{\hyperref[sec:1]{[1]\label{sec:1r}}} Mirjalili, S., Song Dong, J., Sadiq, A.S., Faris, H. (2020). Genetic Algorithm: Theory, Literature Review, and Application in Image Reconstruction. In: Mirjalili, S., Song Dong, J., Lewis, A. (eds) Nature-Inspired Optimizers. Studies in Computational Intelligence, vol 811. Springer, Cham.
+	      \url{https://doi.org/10.1007/978-3-030-12127-3_5}
+
+	\item \textbf{\hyperref[sec:2]{[2]\label{sec:2r}}} Holland, J. H. (1992). Genetic Algorithms. Scientific American, 267(1), 66–73. \url{http://www.jstor.org/stable/24939139}
+	\item \textbf{\hyperref[sec:3]{[3]\label{sec:3r}}} Genetic Algorithms
+	      STEPHANIE FORREST
+	      Department of Computer Science, University of New Mexico, Albuquerque forrest@cs.unm.edu
+	      \url{https://dl.acm.org/doi/pdf/10.1145/234313.234350}
+	\item \textbf{\hyperref[sec:4]{[4]\label{sec:4r}}} A Genetic Algorithm Approach to Regenerate Image from a Reduce Scaled Image Using Bit Data Count Kishor Datta Gupta Ph.D. Student, Computer Science University of Memphis, United States of America 3720 Alumni Ave, Memphis, TN 38152, USA kdgupt1@memphis.edu Sajib Sen Ph.D. Student, Computer Science University of Memphis, United States of America 3720 Alumni Ave, Memphis, TN 38152, USA ssen4@memphis.edu \url{https://lumenpublishing.com/journals/index.php/brain/article/view/2031/1688}
+
+	\item \textbf{\hyperref[sec:5]{[5]\label{sec:5r}}} \url{https://github.com/SebastianCharmot/Genetic-Algorithm-Image-Recreation/blob/master/CSC_370_Final_Project_Sebastian_Daniel.pdf}
+	      Genetic Programming for Non-Photorealistic Image Generation
+	      Sebastian Charmot and Daniel Cowan
+	      secharmot,
+	      dacowan@
+	      davidson.edu
+	      Davidson College
+	      Davidson, NC 28035
+	      U.S.A.
+
+	\item \textbf{\hyperref[sec:6]{[6]\label{sec:6r}}} Baniasadi, M., Ross, B.J. Exploring non-photorealistic rendering with genetic programming. Genet Program Evolvable Mach 16, 211–239 (2015). \url{https://doi.org/10.1007/s10710-014-9234-0}
 \end{itemize}
 
 \end{document}
