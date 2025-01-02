@@ -11,7 +11,7 @@
 \usepackage{subcaption}
 
 \title{
-AI Project Proposal: Image Generation Using Generative AI with Minimal Objects}
+Image Generation Using Generative AI with Minimal Objects}
 
 \author{
 	\IEEEauthorblockN{Muhammad Hamza}
@@ -46,15 +46,10 @@ AI Project Proposal: Image Generation Using Generative AI with Minimal Objects}
 \vspace{-1cm}
 
 \section*{Abstract}
-Generative AI has revolutionized image synthesis, enabling the creation of realistic images from scratch. This project focuses on generating images using a minimal set of objects to replicate the original image. The goal is to optimize the number of objects used while maintaining high image fidelity. We propose a genetic algorithm-based approach to achieve this objective. Our method aims to balance computational efficiency with image accuracy, ensuring that the generated images closely resemble the originals. Initial prototypes have shown promising results, and we plan to refine the model architecture and conduct comprehensive evaluations to benchmark performance against existing methods.
+Generative AI has advanced image synthesis, but the challenge of creating high-fidelity images using minimal objects remains unresolved. This project introduces a genetic algorithm-based approach to generate images with minimal objects while maintaining image fidelity. The methodology involves initializing a population of objects, applying fitness evaluations using the Delta E color difference metric, and iteratively optimizing through crossover and mutation. Initial prototypes demonstrate the feasibility of achieving high-quality image replication with fewer resources. The proposed method balances computational efficiency and image accuracy, presenting a scalable solution for resource-constrained environments. Future work will refine the model, optimize parameters, and conduct extensive evaluations against existing methods. The project aims to bridge the gap in generative AI by developing a novel, efficient approach to image generation with minimal resource usage.
 
 \section{Introduction}
 The rapid advancement of Generative AI has paved the way for innovative applications in various fields, including game design and image synthesis. This project focuses on generating images using a minimal set of objects. The aim is to replicate the original image as accurately as possible while optimizing the number of objects used.
-% . Background and Introduction: Provide context and relevance (1–2 paragraphs). 
-% 2. Problem Statement: Clearly define the research problem (1 paragraph). 
-% 3. Research Objectives: State the goals of the study (optional, but recommended). 
-% 4. Contributions: Summarize key contributions in 1 paragraph with bullet points. 
-% 5. Paper Organization: Outline the structure of the paper (1 paragraph). 
 
 \subsection{Background}
 Generative AI has seen significant advancements in recent years, with models like GANs and VAEs capable of generating high-quality images. However, these models often rely on a large number of objects to recreate detailed images. Our project aims to explore methods that can generate images with high fidelity using a minimal set of objects, thereby optimizing computational efficiency and resource utilization.
@@ -248,7 +243,7 @@ We then implemented a more complex model that diminishes the size of the ellipse
 	\caption{Recreating original image using improved Algoritm Implementation}
 \end{figure}
 
-As shown in the results, the improved model demonstrates better fitness and image fidelity compared to the basic model. The fitness graph indicates a more consistent improvement in fitness over the generations, suggesting that the model is converging towards the original image.\\ 
+As shown in the results, the improved model demonstrates better fitness and image fidelity compared to the basic model. The fitness graph indicates a more consistent improvement in fitness over the generations, suggesting that the model is converging towards the original image.\\
 We observed that after a certain number of generations, the fitness value stagnates, indicating that the model has reached a local optimum. This highlights the need to optimize the model parameters and explore different representations and fitness functions to enhance convergence and image fidelity.
 
 \subsection*{
