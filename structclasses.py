@@ -1,6 +1,8 @@
 import math
 import random
 from typing import List
+import numpy as np
+from scipy.spatial import Delaunay
 from dataclasses import dataclass
 
 
@@ -103,7 +105,7 @@ class TriangleCacheData:
         tri = other
         return self.aX == tri.aX and self.aY == tri.aY and self.bX == tri.bX and self.bY == tri.bY and self.cX == tri.cX and self.cY == tri.cY
 
-    def hash(self):
+    def hash_tri(self):
         x = self.aX + self.bX + self.cX
         y = self.aY + self.bY + self.cY
         return (97 + x) * 97 + y
@@ -113,3 +115,8 @@ class TriangleCacheData:
 
     def set_cached_hash(self, hash):
         self.hash = hash
+     
+@dataclass   
+class CustomDelauany:
+    points: NormPointArray
+    simplices: np.ndarray

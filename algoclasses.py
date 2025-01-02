@@ -159,79 +159,131 @@ class TrianglesImageFitness:
         self.target:np.ndarray = target_image
         self.block_size:int = block_size
         self.max_difference:int = max_difference
-        self.triangle_cache: dict = {}  # Cache for storing triangle fitness results
-        self.next_cache: dict = {}  # Cache for storing next generation results
-        self.triangulation: Delaunay = None
-        self.base: np.ndarray = None
-
-    def _hash_triangle(self, points):
-        """
-        Create a hash for a triangle based on its points.
-        """
-        return hashlib.md5(points.tobytes()).hexdigest()
+        self.triangle_cache: List[TriangleCacheData] = []  # Cache for storing triangle fitness results
+        self.next_cache: List[TriangleCacheData] = []  # Cache for storing next generation results
+        self.triangulation: CustomDelauany = None
 
     def calculate(self, pointsData: PointsData) -> float:
         """
         Calculate the fitness of a set of points.
         """
+        
+
+        # elif self.base is not None:
+        #     # TODO: Check this
+        #     self.triangulation = self.base
+            
+        #     # get the points from the triangulation
+        #     previous_points = self.triangulation.simplices
+        #     points = np.array([[p.x, p.y] for p in previous_points], np.float64)
+        #     # remove only updated points
+        #     for mutation in pointsData.mutations:
+        #         points[mutation.index] = [mutation.new.x, mutation.new.y]
+        #     tri = Delaunay(points).simplices           
+
+        # # Prepare for next generation
+        # self.base = None
+
+        # self.next_cache = []
+
+        # difference = 0
+        
+        # cache_mask = np.zeros((h, w), dtype=np.uint8)
+        
+        # tri = self.triangle_cache
+        
+        # area = 0
+        # total_area = 0
+
+        # for simplex in self.triangulation.simplices:
+        #     pts = self.triangulation.points[simplex]
+        #     pts = (pts * np.array([w, h])).astype(np.int32)
+        #     triangle_cache = TriangleCacheData(
+        #         pts[0][0],
+        #         pts[0][1],
+        #         pts[1][0],
+        #         pts[1][1],
+        #         pts[2][0],
+        #         pts[2][1],
+        #         0,
+        #         0,
+        #     )
+        #     tri_hash = triangle_cache.hash_tri()
+        #     triangle_cache.set_cached_hash(tri_hash)
+
+        #     # Check the cache first
+        #     for cache in tri:
+        #         if cache.cached_hash() == triangle_cache.cached_hash():
+        #             difference += cache.data()
+        #             break
+
+        #     # If not in cache, calculate
+        #     triangle = np.array([pts], np.int32)
+        #     mask = np.zeros((h, w), dtype=np.uint8)
+        #     cv2.fillPoly(mask, [triangle], 255)
+
+        #     # Calculate triangle area
+        #     area = cv2.contourArea(triangle)
+        #     total_area += area
+
+        #     # Calculate pixel variance in the triangle
+        #     triangle_pixels = self.target[mask == 255]
+        #     if len(triangle_pixels) > 0:
+        #         mean = np.mean(triangle_pixels, axis=0)
+        #         variance = np.mean((triangle_pixels - mean) ** 2)
+        #         difference += variance
+
+        #         # Store in cache
+        #         triangle_cache.fitness = variance
+        #         tri.append(triangle_cache)
+
+        # # Penalty for uncovered pixels
+        # blank_area = (h * w) - total_area
+        # difference += blank_area * 255
+
+        # return 1 - (difference / self.max_difference)
+        
+        # not going to use caching for now
+        
         h, w, _ = self.target.shape
         points = pointsData.points
         if not isinstance(points, NormPointArray):
             raise TypeError("Expected NormPointArray, got {}".format(type(points)))
-
         if self.triangulation is None:
             points = np.array([[p.x, p.y] for p in points.points], np.float64)
-            tri = Delaunay(points)
-            self.triangulation_cache = points
-        elif self.base is not None:
-            tri = self.base
-
-            mutations: List[Mutation] = pointsData.mutations
-            if mutations is None:
-                ValueError("Expected mutations in pointsData")
-
-            for m in mutations:
-                tri.points[m.index] = [m.new.x, m.new.y]
-
-        base = None
-
-        # tri = Delaunay(points)
-        difference = 0
-        total_area = 0
-
-        for simplex in tri.simplices:
-            pts = points[simplex]
+            simplices = Delaunay(points).simplices
+            triangulation = CustomDelauany(points, simplices)
+            self.triangulation = triangulation
+            
+        # TODO PLEASE FIX THIS
+        else:
+            self.triangulation.points = np.array([[p.x, p.y] for p in points.points], np.float64)
+            self.triangulation.simplices = Delaunay(self.triangulation.points).simplices
+        
+        difference = 0        
+        area = 0
+        
+        for simplex in self.triangulation.simplices:
+            pts = self.triangulation.points[simplex]
             pts = (pts * np.array([w, h])).astype(np.int32)
-            triangle_hash = self._hash_triangle(pts)
-
-            # Check the cache first
-            if triangle_hash in self.triangle_cache:
-                difference += self.triangle_cache[triangle_hash]
-                continue  # Skip recalculating
-
-            # If not in cache, calculate
             triangle = np.array([pts], np.int32)
             mask = np.zeros((h, w), dtype=np.uint8)
             cv2.fillPoly(mask, [triangle], 255)
-
+            
             # Calculate triangle area
             area = cv2.contourArea(triangle)
-            total_area += area
-
+            
             # Calculate pixel variance in the triangle
             triangle_pixels = self.target[mask == 255]
             if len(triangle_pixels) > 0:
                 mean = np.mean(triangle_pixels, axis=0)
                 variance = np.mean((triangle_pixels - mean) ** 2)
                 difference += variance
-
-                # Store in cache
-                self.triangle_cache[triangle_hash] = variance
-
-        # Penalty for uncovered pixels
-        blank_area = (h * w) - total_area
-        difference += blank_area * 255
-
+            
+            # Penalty for uncovered pixels
+            blank_area = (h * w) - area
+            difference += blank_area * 255
+            
         return 1 - (difference / self.max_difference)
 
     def set_cache(self, cache):
@@ -246,8 +298,8 @@ class ParallelEvaluator:
         self, fitness_funcs: List[TrianglesImageFitness], cache_power_of_2: int
     ):
         self.evaluators = fitness_funcs
-        self.cache: dict = {}
-        self.next_cache: dict = {}
+        self.cache: List[TriangleCacheData] = []
+        self.next_cache: List[TriangleCacheData] = []
 
     def get(self, i):
         return self.evaluators[i]
@@ -259,8 +311,10 @@ class ParallelEvaluator:
         evaluator = self.evaluators[i]
 
         # Put triangles calculated from the fitness function into the cache
-        for key, data in evaluator.triangle_cache.copy().items():
-            self.cache[key] = data
+        # for key, data in evaluator.triangle_cache.copy():
+        #     self.cache[key] = data
+        for data in evaluator.triangle_cache:
+            self.cache.append(data)
 
         evaluator.set_cache(self.cache)
 
